@@ -374,7 +374,7 @@ class _BookScreenState extends State<BookScreen> {
                                                                               16.0),
                                                                     ),
                                                                     child: const Text(
-                                                                        'Арендовать'),
+                                                                        'Арендовать книгу'),
                                                                   ),
                                                                 ),
                                                               ],
