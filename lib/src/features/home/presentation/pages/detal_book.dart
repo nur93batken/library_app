@@ -38,13 +38,6 @@ class BookDetailsScreen extends StatelessWidget {
               },
               child: const Text('Кайтаруу'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                context.read<BookCubit>().deleteBook(book.gettitle);
-                Navigator.pop(context);
-              },
-              child: const Text('Удалить'),
-            ),
           ],
         ),
       ),

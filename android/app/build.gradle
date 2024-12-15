@@ -46,4 +46,10 @@ flutter {
     source = "../.."
 }
 
+dependencies {
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-database'
+    // Другие зависимости
+}
+
 apply plugin: 'com.google.gms.google-services'

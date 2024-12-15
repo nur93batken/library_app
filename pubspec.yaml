@@ -27,6 +27,7 @@ dependencies:
   firebase_core: ^3.8.1
   firebase_auth: ^5.3.4 # Пример для аутентификации
   cloud_firestore: ^5.5.1 # Пример для базы данных
+  firebase_database: ^11.2.0
 
 dev_dependencies:
   flutter_test:
