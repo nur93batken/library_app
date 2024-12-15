@@ -1,439 +1,349 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../data/models/models.dart';
+import 'package:my_books/src/features/home/presentation/pages/detal_book.dart';
+import '../../data/models/book.dart';
 import '../cubit/book_cubit.dart';
-import 'dart:math' show Random;
+import '../widgets/filter_books.dart';
 
 class BookScreen extends StatefulWidget {
   @override
-  _BookScreenState createState() => _BookScreenState();
+  _BookListWithFilterScreenState createState() =>
+      _BookListWithFilterScreenState();
 }
 
-class _BookScreenState extends State<BookScreen> {
-  // Список фильтрованных книг
-  List<Book> filteredBooks = [];
-
-  // Список жанров
-  final List<String> genres = ['Все', 'Программирование', 'Дизайн'];
-
-  // Переменная для выбранного жанра
-  String selectedGenre = 'Все';
-
+class _BookListWithFilterScreenState extends State<BookScreen> {
+  String selectedGenre = 'Все'; // По умолчанию выбран "Все"
   double _currentDay = 5; // Начальное значение день
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocBuilder<BookCubit, List<Book>>(
-        builder: (context, books) {
-          // Примените фильтрацию на основе выбранного жанра
-          filteredBooks = applyGenreFilter(books);
+      body: Column(
+        children: [
+          // Фильтры жанров
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GenreFilterWidget(
+              selectedGenre: selectedGenre,
+              onGenreSelected: (genre) {
+                setState(() {
+                  selectedGenre = genre;
+                });
+              },
+            ),
+          ),
+          // Список книг
+          Expanded(
+            child: BlocBuilder<BookCubit, List<Book>>(
+              builder: (context, books) {
+                // Фильтрация книг по выбранному жанру
+                final filteredBooks = selectedGenre == 'Все'
+                    ? books
+                    : books
+                        .where((book) => book.genres.contains(selectedGenre))
+                        .toList();
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Фильтр по жанрам
-                SizedBox(
-                  height: 45, // Высота для горизонтального скролла
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: genres.length,
-                    itemBuilder: (context, index) {
-                      final genre = genres[index];
-                      return GestureDetector(
-                        onTap: () {
-                          // Обновляем выбранный жанр и применяем фильтрацию
-                          setState(() {
-                            selectedGenre = genre; // Обновляем выбранный жанр
-                            // Применяем фильтрацию и обновляем список книг
-                            filteredBooks = applyGenreFilter(books);
-                          });
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8.0),
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 4.0, horizontal: 24.0),
-                          decoration: BoxDecoration(
-                            color: selectedGenre == genre
-                                ? Colors.blue
-                                : Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(24.0),
-                          ),
-                          child: Center(
-                            child: Text(
-                              genre,
-                              style: TextStyle(
-                                color: selectedGenre == genre
-                                    ? Colors.white
-                                    : Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(
-                    height:
-                        16), // Добавляем отступ между фильтром и списком книг
+                if (filteredBooks.isEmpty) {
+                  return const Center(child: Text('Нет книг для отображения.'));
+                }
 
-                // Список книг
-                Expanded(
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: ListView.builder(
                     itemCount: filteredBooks.length,
                     itemBuilder: (context, index) {
                       final book = filteredBooks[index];
-                      return Card(
-                        elevation: 0,
-                        margin: const EdgeInsets.only(bottom: 8.0),
-                        child: ListTile(
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                book.gettitle,
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Автор: ${book.author}',
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                              Text(
-                                'Жанр: ${book.genres}',
-                                style: const TextStyle(
-                                    fontSize: 14, color: Colors.grey),
-                              ),
-                              Text(
-                                'Год издания: ${book.date}',
-                                style: const TextStyle(
-                                    fontSize: 14, color: Colors.grey),
-                              ),
-                              const Divider(
-                                color: Colors.grey, // Цвет линии
-                                thickness: 1, // Толщина линии
-                                height: 16, // Пространство перед и после линии
-                              ),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'В библиотеке: ${book.copyCount}шт.',
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: book.isAvailable
-                                            ? Colors.green
-                                            : Colors.red),
-                                  ),
-                                  IconButton(
-                                    icon:
-                                        const Icon(Icons.star_border_outlined),
-                                    onPressed: () {
-                                      // Обработка нажатия на кнопку "Информация"
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: Text(book.gettitle),
-                                          content:
-                                              Text('Автор: ${book.author}'),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: const Text('Закрыть'),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.more_vert),
-                                    onPressed: () {
-                                      // Обработка нажатия на кнопку "Информация"
-                                      showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled:
-                                            true, // Позволяет модальному окну занимать всю высоту
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(16)),
-                                        ),
-                                        builder: (BuildContext context) {
-                                          String title = book.gettitle;
-                                          String author = book.author;
-                                          double localDay =
-                                              _currentDay; // Локальное состояние
-                                          double localPrice = 146;
-                                          return StatefulBuilder(
-                                            builder: (BuildContext context,
-                                                StateSetter setModalState) {
-                                              return DraggableScrollableSheet(
-                                                expand: false,
-                                                initialChildSize:
-                                                    0.6, // Начальная высота (70% экрана)
-                                                minChildSize:
-                                                    0.4, // Минимальная высота (40% экрана)
-                                                maxChildSize:
-                                                    1, // Максимальная высота (95% экрана)
-                                                builder: (BuildContext context,
-                                                    ScrollController
-                                                        scrollController) {
-                                                  return SingleChildScrollView(
-                                                    controller:
-                                                        scrollController,
-                                                    child: Column(
-                                                      children: [
-                                                        const SizedBox(
-                                                          height: 16,
-                                                        ),
-                                                        Container(
-                                                          width: 30,
-                                                          height: 4,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: const Color(
-                                                                0xFF9CA4AB),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5),
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BookDetailsScreen(book: book),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          elevation: 0,
+                          margin: const EdgeInsets.only(bottom: 8.0),
+                          child: ListTile(
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  book.gettitle,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Автор: ${book.author}',
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                Text(
+                                  'Жанр: ${book.genres}',
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.grey),
+                                ),
+                                Text(
+                                  'Год издания: ${book.date}',
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.grey),
+                                ),
+                                const Divider(
+                                  color: Colors.grey, // Цвет линии
+                                  thickness: 1, // Толщина линии
+                                  height:
+                                      16, // Пространство перед и после линии
+                                ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'В библиотеке: ${book.copyCount}шт.',
+                                      style: const TextStyle(
+                                          fontSize: 14, color: Colors.green),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                          Icons.star_border_outlined),
+                                      onPressed: () {
+                                        // Обработка нажатия на кнопку "Информация"
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: Text(book.gettitle),
+                                            content:
+                                                Text('Автор: ${book.author}'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: const Text('Закрыть'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.more_vert),
+                                      onPressed: () {
+                                        // Обработка нажатия на кнопку "Информация"
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled:
+                                              true, // Позволяет модальному окну занимать всю высоту
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.vertical(
+                                                top: Radius.circular(16)),
+                                          ),
+                                          builder: (BuildContext context) {
+                                            String title = book.gettitle;
+                                            String author = book.author;
+                                            double localDay =
+                                                _currentDay; // Локальное состояние
+                                            double localPrice = 100;
+                                            return StatefulBuilder(
+                                              builder: (BuildContext context,
+                                                  StateSetter setModalState) {
+                                                return DraggableScrollableSheet(
+                                                  expand: false,
+                                                  initialChildSize:
+                                                      0.6, // Начальная высота (70% экрана)
+                                                  minChildSize:
+                                                      0.4, // Минимальная высота (40% экрана)
+                                                  maxChildSize:
+                                                      1, // Максимальная высота (95% экрана)
+                                                  builder: (BuildContext
+                                                          context,
+                                                      ScrollController
+                                                          scrollController) {
+                                                    return SingleChildScrollView(
+                                                      controller:
+                                                          scrollController,
+                                                      child: Column(
+                                                        children: [
+                                                          const SizedBox(
+                                                            height: 16,
                                                           ),
-                                                        ),
-                                                        Center(
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(16.0),
-                                                            child: Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                const Center(
-                                                                  child: Text(
-                                                                    'Арендовать книгу',
-                                                                    style:
-                                                                        TextStyle(
-                                                                      fontSize:
-                                                                          18,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
+                                                          Container(
+                                                            width: 30,
+                                                            height: 4,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: const Color(
+                                                                  0xFF9CA4AB),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5),
+                                                            ),
+                                                          ),
+                                                          Center(
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(
+                                                                      16.0),
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  const Center(
+                                                                    child: Text(
+                                                                      'Арендовать книгу',
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            18,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                      ),
                                                                     ),
                                                                   ),
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 16),
-                                                                ListTile(
-                                                                  title: Text(
-                                                                      title),
-                                                                  subtitle: Text(
-                                                                      author),
-                                                                  onTap: () {
-                                                                    Navigator.pop(
-                                                                        context);
-                                                                  },
-                                                                ),
-                                                                const Text(
-                                                                  'Выберите на сколько день будете арендовать:',
-                                                                  style: TextStyle(
-                                                                      fontSize:
+                                                                  const SizedBox(
+                                                                      height:
                                                                           16),
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 20),
-                                                                Center(
-                                                                  child: Text(
-                                                                    '${localDay.toStringAsFixed(0)} день',
-                                                                    style:
-                                                                        const TextStyle(
-                                                                      fontSize:
-                                                                          24,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 15),
-                                                                Slider(
-                                                                  value:
-                                                                      localDay,
-                                                                  min: 1,
-                                                                  max: 30,
-                                                                  divisions: 30,
-                                                                  label:
-                                                                      '${localDay.toStringAsFixed(0)} день',
-                                                                  onChanged:
-                                                                      (double
-                                                                          value) {
-                                                                    setModalState(
-                                                                        () {
-                                                                      localDay =
-                                                                          value; // Локальное обновление
-                                                                      if (localDay >
-                                                                          25) {
-                                                                        localPrice =
-                                                                            localDay *
-                                                                                5;
-                                                                      } else if (20 <
-                                                                              localDay &&
-                                                                          localDay <=
-                                                                              25) {
-                                                                        localPrice =
-                                                                            localDay *
-                                                                                10;
-                                                                      } else if (15 <
-                                                                              localDay &&
-                                                                          localDay <=
-                                                                              20) {
-                                                                        localPrice =
-                                                                            localDay *
-                                                                                15;
-                                                                      } else if (10 <
-                                                                              localDay &&
-                                                                          localDay <=
-                                                                              15) {
-                                                                        localPrice =
-                                                                            localDay *
-                                                                                20;
-                                                                      } else if (5 <
-                                                                              localDay &&
-                                                                          localDay <=
-                                                                              10) {
-                                                                        localPrice =
-                                                                            localDay *
-                                                                                25;
-                                                                      } else if (0 <
-                                                                              localDay &&
-                                                                          localDay <=
-                                                                              5) {
-                                                                        localPrice =
-                                                                            localDay *
-                                                                                30;
-                                                                      }
-                                                                    });
-                                                                  },
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 15),
-                                                                Center(
-                                                                  child: Text(
-                                                                    '${localPrice.toStringAsFixed(0)} сом',
-                                                                    style:
-                                                                        const TextStyle(
-                                                                      fontSize:
-                                                                          24,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      color: Colors
-                                                                          .blue,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(
-                                                                    height: 20),
-                                                                SizedBox(
-                                                                  width: double
-                                                                      .infinity,
-                                                                  child:
-                                                                      ElevatedButton(
-                                                                    onPressed:
-                                                                        () {
-                                                                      context
-                                                                          .read<
-                                                                              BookCubit>()
-                                                                          .rentBook(
-                                                                              book);
+                                                                  ListTile(
+                                                                    title: Text(
+                                                                        title),
+                                                                    subtitle: Text(
+                                                                        author),
+                                                                    onTap: () {
                                                                       Navigator.pop(
                                                                           context);
                                                                     },
-                                                                    style: ElevatedButton
-                                                                        .styleFrom(
-                                                                      backgroundColor:
-                                                                          Colors
-                                                                              .blue, // Фоновый цвет
-                                                                      foregroundColor:
-                                                                          Colors
-                                                                              .white, // Цвет текста
-                                                                      padding: const EdgeInsets
-                                                                          .symmetric(
-                                                                          vertical:
-                                                                              16.0),
-                                                                    ),
-                                                                    child: const Text(
-                                                                        'Арендовать книгу'),
                                                                   ),
-                                                                ),
-                                                              ],
+                                                                  const Text(
+                                                                    'Выберите на сколько день будете арендовать:',
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            16),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          20),
+                                                                  Center(
+                                                                    child: Text(
+                                                                      '${localDay.toStringAsFixed(0)} день',
+                                                                      style:
+                                                                          const TextStyle(
+                                                                        fontSize:
+                                                                            24,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          15),
+                                                                  Slider(
+                                                                    value:
+                                                                        localDay,
+                                                                    min: 1,
+                                                                    max: 30,
+                                                                    divisions:
+                                                                        30,
+                                                                    label:
+                                                                        '${localDay.toStringAsFixed(0)} день',
+                                                                    onChanged:
+                                                                        (double
+                                                                            value) {
+                                                                      setModalState(
+                                                                          () {
+                                                                        localDay =
+                                                                            value; // Локальное обновление
+                                                                        localPrice =
+                                                                            localDay *
+                                                                                30;
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          15),
+                                                                  Center(
+                                                                    child: Text(
+                                                                      '${localPrice.toStringAsFixed(0)} сом',
+                                                                      style:
+                                                                          const TextStyle(
+                                                                        fontSize:
+                                                                            24,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                        color: Colors
+                                                                            .blue,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          20),
+                                                                  SizedBox(
+                                                                    width: double
+                                                                        .infinity,
+                                                                    child:
+                                                                        ElevatedButton(
+                                                                      onPressed:
+                                                                          () {
+                                                                        context
+                                                                            .read<BookCubit>()
+                                                                            .rentBook(book);
+                                                                        Navigator.pop(
+                                                                            context);
+                                                                      },
+                                                                      style: ElevatedButton
+                                                                          .styleFrom(
+                                                                        backgroundColor:
+                                                                            Colors.blue, // Фоновый цвет
+                                                                        foregroundColor:
+                                                                            Colors.white, // Цвет текста
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            vertical:
+                                                                                16.0),
+                                                                      ),
+                                                                      child: const Text(
+                                                                          'Арендовать'),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
                                                             ),
                                                           ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                },
-                                              );
-                                            },
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ],
+                                                        ],
+                                                      ),
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            leading: const Icon(Icons.book),
                           ),
-                          leading: const Icon(Icons.book),
                         ),
                       );
                     },
                   ),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Жаңы китеп кошуу
-          Random random = Random();
-          int randomInt = random.nextInt(100);
-          int randomGenre = random.nextInt(genres.length);
-          context.read<BookCubit>().addBook(
-                Book(
-                  title: "New Book ${randomInt}",
-                  author: "Author Name",
-                  genres: genres[randomGenre],
-                  copyCount: 5,
-                  isAvailable: true,
-                  date: '',
-                ),
-              );
-        },
-        child: Icon(Icons.add),
+          ),
+        ],
       ),
     );
-  }
-
-  // Метод для фильтрации книг по жанру
-  List<Book> applyGenreFilter(List<Book> books) {
-    if (selectedGenre == 'Все') {
-      return books;
-    }
-    return books.where((book) => book.genres.contains(selectedGenre)).toList();
   }
 }

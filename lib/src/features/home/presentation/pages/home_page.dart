@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_books/src/features/home/presentation/pages/add_book.dart';
 import 'package:my_books/src/features/home/presentation/pages/books.dart';
 
 class MyHome extends StatefulWidget {
@@ -34,7 +35,14 @@ class _MyHomePageState extends State<MyHome> {
             padding: const EdgeInsets.only(right: 12),
             child: IconButton(
               icon: const Icon(Icons.person),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AddBookScreen(),
+                  ),
+                );
+              },
             ),
           ),
         ],
