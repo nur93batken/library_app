@@ -7,7 +7,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => BookCubit(),
+      create: (context) => BookCubit()..loadBooks(),
       child: const MaterialApp(
         home: MyHome(),
       ),

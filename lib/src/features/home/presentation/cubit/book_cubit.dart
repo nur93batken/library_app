@@ -1,5 +1,6 @@
+import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../data/models/models.dart';
 
 class BookCubit extends Cubit<List<Book>> {
@@ -7,20 +8,12 @@ class BookCubit extends Cubit<List<Book>> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Загрузка книг
+  // Китептерди жүктөө
   Future<void> loadBooks() async {
     try {
       final snapshot = await _firestore.collection('books').get();
       final books = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return Book(
-          title: data['title'],
-          author: data['author'],
-          genres: data['genres'],
-          copyCount: data['copyCount'],
-          isAvailable: data['isAvailable'],
-          date: data['date'],
-        );
+        return Book.fromFirestore(doc.data(), doc.id);
       }).toList();
       emit(books);
     } catch (e) {
@@ -28,71 +21,43 @@ class BookCubit extends Cubit<List<Book>> {
     }
   }
 
-  // Добавление книги
+  // Китеп кошуу
   Future<void> addBook(Book book) async {
     try {
-      final newBookRef = _firestore.collection('books').doc();
-      await newBookRef.set({
-        'title': book.gettitle,
-        'author': book.author,
-        'genres': book.genres,
-        'copyCount': book.copyCount,
-        'isAvailable': book.isAvailable,
-        'date': book.date,
-      });
-      loadBooks(); // Обновляем список книг
+      await _firestore.collection('books').add(book.toFirestore());
+      await loadBooks();
     } catch (e) {
       print('Ошибка при добавлении книги: $e');
     }
   }
 
-  // Аренда книги
+  // Китепти ижарага алуу
   Future<void> rentBook(Book book) async {
+    if (book.id == null) return; // ID текшерүү
     try {
-      final snapshot = await _firestore
-          .collection('books')
-          .where('title', isEqualTo: book.gettitle)
-          .get();
-      if (snapshot.docs.isNotEmpty) {
-        final doc = snapshot.docs.first;
-        final data = doc.data();
-        if (data['copyCount'] > 0) {
-          // Уменьшаем количество копий
-          await _firestore.collection('books').doc(doc.id).update({
-            'copyCount': data['copyCount'] - 1,
-            'isAvailable': (data['copyCount'] - 1) > 0,
-          });
-          loadBooks(); // Обновляем список книг
-        } else {
-          print('Книга больше недоступна.');
-        }
+      if (book.copyCount > 0) {
+        await _firestore.collection('books').doc(book.id).update({
+          'copyCount': book.copyCount - 1,
+          'isAvailable': (book.copyCount - 1) > 0,
+        });
+        await loadBooks();
       } else {
-        print('Книга не найдена в базе данных.');
+        print('Книга больше недоступна.');
       }
     } catch (e) {
       print('Ошибка при аренде книги: $e');
     }
   }
 
-  // Возврат книги
+  // Китепти кайтаруу
   Future<void> returnBook(Book book) async {
+    if (book.id == null) return; // ID текшерүү
     try {
-      final snapshot = await _firestore
-          .collection('books')
-          .where('title', isEqualTo: book.gettitle)
-          .get();
-      if (snapshot.docs.isNotEmpty) {
-        final doc = snapshot.docs.first;
-        final data = doc.data();
-        // Увеличиваем количество копий
-        await _firestore.collection('books').doc(doc.id).update({
-          'copyCount': data['copyCount'] + 1,
-          'isAvailable': true,
-        });
-        loadBooks(); // Обновляем список книг
-      } else {
-        print('Книга не найдена в базе данных.');
-      }
+      await _firestore.collection('books').doc(book.id).update({
+        'copyCount': book.copyCount + 1,
+        'isAvailable': true,
+      });
+      await loadBooks();
     } catch (e) {
       print('Ошибка при возврате книги: $e');
     }

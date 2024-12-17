@@ -14,7 +14,12 @@ class BookScreen extends StatefulWidget {
 
 class _BookListWithFilterScreenState extends State<BookScreen> {
   String selectedGenre = 'Все'; // По умолчанию выбран "Все"
-  double _currentDay = 5; // Начальное значение день
+  double _currentDay = 5; // Начальное значение
+
+  void initState() {
+    super.initState();
+    // Китептерди жүктөө
+  }
 
   @override
   Widget build(BuildContext context) {
