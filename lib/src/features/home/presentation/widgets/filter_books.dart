@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_books/src/core/constants/colors.dart';
 
 class GenreFilterWidget extends StatelessWidget {
   final List<String> genres = ['Все', 'Fiction', 'Adventure', 'Drama'];
@@ -22,8 +23,9 @@ class GenreFilterWidget extends StatelessWidget {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 elevation: 0,
-                backgroundColor: isSelected ? Colors.blue : Colors.grey[300],
-                foregroundColor: isSelected ? Colors.white : Colors.black,
+                backgroundColor: isSelected ? AppColors.blue : AppColors.grey,
+                foregroundColor:
+                    isSelected ? AppColors.white : AppColors.blackText,
               ),
               onPressed: () => onGenreSelected(genre),
               child: Text(genre),

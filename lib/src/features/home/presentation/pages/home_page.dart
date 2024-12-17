@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_books/src/core/constants/colors.dart';
 import 'package:my_books/src/features/home/presentation/pages/add_book.dart';
 import 'package:my_books/src/features/home/presentation/pages/books.dart';
 
@@ -64,8 +65,8 @@ class _MyHomePageState extends State<MyHome> {
           ),
         ],
         currentIndex: _selectedIndex, // Указываем текущий индекс
-        selectedItemColor: Colors.blue, // Цвет выбранного элемента
-        unselectedItemColor: Colors.grey, // Цвет невыбранных элементов
+        selectedItemColor: AppColors.blue, // Цвет выбранного элемента
+        unselectedItemColor: AppColors.grey, // Цвет невыбранных элементов
         onTap: _onItemTapped, // Обработчик нажатий
       ),
     );

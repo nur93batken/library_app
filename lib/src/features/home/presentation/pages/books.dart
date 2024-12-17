@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_books/src/core/constants/constants.dart';
 import 'package:my_books/src/features/home/presentation/pages/detal_book.dart';
 import '../../data/models/book.dart';
 import '../cubit/book_cubit.dart';
@@ -71,24 +72,24 @@ class _BookListWithFilterScreenState extends State<BookScreen> {
                               children: [
                                 Text(
                                   book.gettitle,
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
+                                  style: AppTextStyles.f16w600
+                                      .copyWith(color: AppColors.blackText),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Автор: ${book.author}',
-                                  style: const TextStyle(fontSize: 14),
+                                  style: AppTextStyles.f14w400
+                                      .copyWith(color: AppColors.greyText),
                                 ),
                                 Text(
                                   'Жанр: ${book.genres}',
-                                  style: const TextStyle(
-                                      fontSize: 14, color: Colors.grey),
+                                  style: AppTextStyles.f14w400
+                                      .copyWith(color: AppColors.greyText),
                                 ),
                                 Text(
                                   'Год издания: ${book.date}',
-                                  style: const TextStyle(
-                                      fontSize: 14, color: Colors.grey),
+                                  style: AppTextStyles.f14w400
+                                      .copyWith(color: AppColors.greyText),
                                 ),
                                 const Divider(
                                   color: Colors.grey, // Цвет линии
@@ -103,8 +104,8 @@ class _BookListWithFilterScreenState extends State<BookScreen> {
                                   children: [
                                     Text(
                                       'В библиотеке: ${book.copyCount}шт.',
-                                      style: const TextStyle(
-                                          fontSize: 14, color: Colors.green),
+                                      style: AppTextStyles.f14w400
+                                          .copyWith(color: AppColors.blue),
                                     ),
                                     IconButton(
                                       icon: const Icon(
