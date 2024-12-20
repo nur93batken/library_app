@@ -6,7 +6,7 @@ class User {
   List<Book> rentedBooks = [];
 
   // Конструктор
-  User({required this.name, required this.id});
+  User({required this.name, required this.id, this.rentedBooks = const []});
 
   // Метод: Китепти ижарага алуу
   void rentBook(Book book) {
@@ -21,8 +21,8 @@ class User {
 
   // Метод: Китепти кайтаруу
   void returnBook(Book book) {
-    if (rentedBooks.contains(book.gettitle)) {
-      rentedBooks.remove(book.gettitle);
+    if (rentedBooks.contains(book)) {
+      rentedBooks.remove(book);
       book.returnBook();
       print("Book '${book.gettitle}' returned successfully.");
     } else {

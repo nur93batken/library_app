@@ -6,8 +6,13 @@ import '../../domain/repositories/repositoryes.dart';
 import '../cubit/book_cubit.dart';
 import '../widgets/widgets.dart';
 
-class BookScreen extends StatelessWidget {
-  const BookScreen({super.key});
+class BookScreen extends StatefulWidget {
+  @override
+  _GenreFilterExampleState createState() => _GenreFilterExampleState();
+}
+
+class _GenreFilterExampleState extends State<BookScreen> {
+  String selectedGenre = 'Все';
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +26,11 @@ class BookScreen extends StatelessWidget {
             return Column(
               children: [
                 GenreFilterWidget(
-                  selectedGenre: 'Все',
+                  selectedGenre: selectedGenre,
                   onGenreSelected: (genre) {
+                    setState(() {
+                      selectedGenre = genre;
+                    });
                     context.read<BookCubit>().filterBooks(genre);
                   },
                 ),

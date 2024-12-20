@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:my_books/src/core/constants/colors.dart';
 import 'package:my_books/src/features/home/presentation/pages/add_book.dart';
-import 'package:my_books/src/features/home/presentation/pages/books.dart';
+
+import 'books.dart';
 
 class MyHome extends StatefulWidget {
   const MyHome({super.key});

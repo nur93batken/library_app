@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:my_books/src/core/constants/colors.dart';
 
 class GenreFilterWidget extends StatelessWidget {
-  final List<String> genres = ['Все', 'Программирование', 'Adventure', 'Drama'];
+  final List<String> genres = [
+    'Все',
+    'Программирование',
+    'Function',
+    'Программалоо'
+  ];
   final String selectedGenre;
   final Function(String) onGenreSelected;
 

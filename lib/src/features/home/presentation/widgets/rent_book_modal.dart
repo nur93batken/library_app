@@ -18,7 +18,7 @@ class RentBookModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double localDay = initialDays;
-    double localPrice = 30;
+    double localPrice = initialDays * 30;
 
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter setState) {
