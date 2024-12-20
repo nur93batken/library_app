@@ -17,7 +17,7 @@ class _MyHomePageState extends State<MyHome> {
   static final List<Widget> _pages = <Widget>[
     BookScreen(),
     const Center(child: Text('Избранное', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('Настройки', style: TextStyle(fontSize: 24))),
+    const Center(child: Text('Мои книги', style: TextStyle(fontSize: 24))),
   ];
 
   void _onItemTapped(int index) {
@@ -60,8 +60,8 @@ class _MyHomePageState extends State<MyHome> {
             label: 'Избранное',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Настройки',
+            icon: Icon(Icons.bookmark),
+            label: 'Мои книги',
           ),
         ],
         currentIndex: _selectedIndex, // Указываем текущий индекс

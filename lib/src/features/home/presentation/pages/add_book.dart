@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/book.dart';
+import '../../domain/entities/entities.dart';
 import '../cubit/book_cubit.dart';
 
 class AddBookScreen extends StatelessWidget {

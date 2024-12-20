@@ -6,3 +6,7 @@ class BookState {
 
   BookState({required this.allBooks, required this.filteredBooks});
 }
+
+class BookInitial extends BookState {
+  BookInitial({required super.allBooks, required super.filteredBooks});
+}

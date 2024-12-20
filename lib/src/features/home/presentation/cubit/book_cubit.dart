@@ -1,23 +1,31 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../data/models/models.dart';
+import '../../domain/entities/entities.dart';
+import '../../domain/repositories/repositoryes.dart';
 
 class BookCubit extends Cubit<List<Book>> {
-  BookCubit() : super([]);
-
+  BookCubit({required this.bookRepository}) : super([]);
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Китептерди жүктөө
+  final BookRepository bookRepository;
+  List<Book> _allBooks = [];
+
   Future<void> loadBooks() async {
     try {
-      final snapshot = await _firestore.collection('books').get();
-      final books = snapshot.docs.map((doc) {
-        return Book.fromFirestore(doc.data(), doc.id);
-      }).toList();
-      emit(books);
+      _allBooks = (await bookRepository.fetchBooks());
+      emit(_allBooks);
     } catch (e) {
-      print('Ошибка при загрузке книг: $e');
+      emit([]); // Emit empty list on error
+    }
+  }
+
+  void filterBooks(String genre) {
+    if (genre == 'Все') {
+      emit([..._allBooks]); // Показываем все книги
+    } else {
+      emit(_allBooks.where((book) => book.genres.contains(genre)).toList());
     }
   }
 
@@ -32,7 +40,7 @@ class BookCubit extends Cubit<List<Book>> {
   }
 
   // Китепти ижарага алуу
-  Future<void> rentBook(Book book) async {
+  Future<void> rentBook(Book book, int) async {
     if (book.id == null) return; // ID текшерүү
     try {
       if (book.copyCount > 0) {
@@ -40,7 +48,8 @@ class BookCubit extends Cubit<List<Book>> {
           'copyCount': book.copyCount - 1,
           'isAvailable': (book.copyCount - 1) > 0,
         });
-        await loadBooks();
+        loadBooks();
+        filterBooks('Все');
       } else {
         print('Книга больше недоступна.');
       }
@@ -57,7 +66,8 @@ class BookCubit extends Cubit<List<Book>> {
         'copyCount': book.copyCount + 1,
         'isAvailable': true,
       });
-      await loadBooks();
+      loadBooks();
+      filterBooks('Все');
     } catch (e) {
       print('Ошибка при возврате книги: $e');
     }
