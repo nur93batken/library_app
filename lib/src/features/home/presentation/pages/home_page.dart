@@ -32,19 +32,30 @@ class _MyHomePageState extends State<MyHome> {
       appBar: AppBar(
         title: const Text('Список Книг'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              icon: const Icon(Icons.person),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => AddBookScreen(),
-                  ),
-                );
-              },
-            ),
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: IconButton(
+                  icon: const Icon(Icons.person),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AddBookScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () {},
+                ),
+              ),
+            ],
           ),
         ],
       ),
