@@ -1,32 +1,37 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../../home/domain/entities/entities.dart';
 
 class User {
   String name;
-  int id;
+  String id;
   List<Book> rentedBooks = [];
 
-  // Конструктор
   User({required this.name, required this.id, this.rentedBooks = const []});
 
-  // Метод: Китепти ижарага алуу
+  // Метод для добавления книги в арендованные
   void rentBook(Book book) {
-    if (book.copyCount > 0) {
-      rentedBooks.add(book);
-      book.rentBook();
-      print("Book '${book.gettitle}' rented successfully.");
-    } else {
-      print("Book '${book.gettitle}' is not available.");
-    }
+    rentedBooks.add(book);
   }
 
-  // Метод: Китепти кайтаруу
-  void returnBook(Book book) {
-    if (rentedBooks.contains(book)) {
-      rentedBooks.remove(book);
-      book.returnBook();
-      print("Book '${book.gettitle}' returned successfully.");
-    } else {
-      print("Book '${book.gettitle}' is not rented by this user.");
-    }
+  // Преобразование пользователя в Map для сохранения в Firestore
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'id': id,
+      'rentedBooks': rentedBooks.map((book) => book.toFirestore()).toList(),
+    };
+  }
+
+  // Извлечение пользователя из Firestore (для восстановления объекта User)
+  factory User.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return User(
+      name: data['name'],
+      id: data['id'],
+      rentedBooks: (data['rentedBooks'] as List)
+          .map((bookData) => Book.fromFirestore(bookData))
+          .toList(),
+    );
   }
 }

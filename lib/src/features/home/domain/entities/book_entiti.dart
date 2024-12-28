@@ -85,22 +85,48 @@ class Book {
     updateStatus(false);
   }
 
-  // Firestore'дон келген маалыматтарды Book объектисине айландыруу
+  // Метод copyWith
+  Book copyWith({
+    String? id,
+    String? title,
+    String? author,
+    List<String>? genres,
+    int? copyCount,
+    bool? isAvailable,
+  }) {
+    return Book(
+      id: id ?? this.id,
+      title: title ?? this.gettitle,
+      author: author ?? this.author,
+      copyCount: copyCount ?? this.copyCount,
+      isAvailable: isAvailable ?? this.isAvailable,
+      date: '',
+      genres: '',
+    );
+  }
+
   factory Book.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data()
+        as Map<String, dynamic>; // Преобразуем данные документа в карту
     return Book(
       id: doc.id,
-      title: doc['title'] ?? '',
-      author: doc['author'] ?? '',
-      date: doc['date'] ?? '',
-      genres: doc['genres'] ?? '',
-      copyCount: doc['copyCount'] ?? '',
-      isAvailable: doc['isAvailable'] ?? '',
+      title: data['title'] ?? '', // Если нет title, используем пустую строку
+      author: data['author'] ?? '', // Если нет author, используем пустую строку
+      date: data['date'] ?? '', // Если нет date, используем пустую строку
+      genres: data['genres'] ?? '', // Если нет genres, используем пустую строку
+      copyCount: (data['copyCount'] is int)
+          ? data['copyCount'] as int
+          : 0, // Если copyCount не int, используем 0
+      isAvailable: (data['isAvailable'] is bool)
+          ? data['isAvailable'] as bool
+          : false, // Если isAvailable не bool, используем false
     );
   }
 
   // Book объектин Firestore'го сактоого даярдоо
   Map<String, dynamic> toFirestore() {
     return {
+      'id': id,
       'title': gettitle,
       'author': author,
       'date': date,
@@ -108,5 +134,19 @@ class Book {
       'copyCount': copyCount,
       'isAvailable': isAvailable,
     };
+  }
+
+  // Метод для преобразования данных из карты
+  factory Book.fromJson(Map<String, dynamic> data) {
+    return Book(
+      id: data['id'] ?? '', // Если id нет, используем пустую строку
+      title: data['title'] ?? '', // Если title нет, используем пустую строку
+      author: data['author'] ?? '', // Если author нет, используем пустую строку
+      date: data['date'] ?? '', // Если date нет, используем пустую строку
+      genres: data['genres'] ?? '', // Если genres нет, используем пустую строку
+      copyCount: data['copyCount'] ?? 0, // Если copyCount нет, используем 0
+      isAvailable: data['isAvailable'] ??
+          false, // Если isAvailable нет, используем false
+    );
   }
 }

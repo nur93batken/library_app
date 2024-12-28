@@ -5,7 +5,7 @@ import '../../domain/repositories/user_reposiroty.dart';
 
 // Cubit для управления состоянием
 class BookCubit extends Cubit<UserState> {
-  final BookRepository bookRepository;
+  final BookUserRepository bookRepository;
   List<Book> rentedBooks = [];
 
   BookCubit(this.bookRepository) : super(BookInitialState());

@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_books/src/features/home/domain/entities/entities.dart';
 
-class BookRepository {
+import '../../../authentication/models/user_model.dart';
+
+class BookUserRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Метод для получения доступных книг
@@ -51,6 +53,65 @@ class BookRepository {
       }
     } catch (e) {
       throw Exception("Error returning book: $e");
+    }
+  }
+
+  // Сохранение данных пользователя в Firebase
+  Future<void> saveUser(User user) async {
+    try {
+      await _firestore.collection('users').doc(user.uid).set({
+        'name': user.email,
+        'id': user.uid,
+        'rentedBooks':
+            user.rentedBooks.map((book) => book.toFirestore()).toList(),
+      });
+    } catch (e) {
+      throw Exception('Error saving user: $e');
+    }
+  }
+
+  // Загрузка данных пользователя из Firebase
+  Future<User?> loadUser(String id) async {
+    try {
+      final doc = await _firestore.collection('users').doc(id.toString()).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        return User(
+          email: data['email'],
+          uid: data['uid'],
+          rentedBooks: (data['rentedBooks'] as List)
+              .map((bookData) => Book.fromFirestore(bookData))
+              .toList(),
+          password: data['password'],
+        );
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Error loading user: $e');
+    }
+  }
+
+  Future<User> getUserById(String userId) async {
+    final doc = await _firestore.collection('users').doc(userId).get();
+    if (!doc.exists) {
+      throw Exception('Пользователь не найден');
+    }
+    return User.fromJson(doc.data()!);
+  }
+
+  Future<void> updateUserBooks(User user) async {
+    try {
+      print(
+          'New rentedBooks: ${user.rentedBooks.map((book) => book.toFirestore()).toList()}');
+      await _firestore.collection('users').doc(user.uid).update({
+        'rentedBooks':
+            user.rentedBooks.map((book) => book.toFirestore()).toList(),
+        'isGroup': true
+      });
+      print('Firestore updated successfully.');
+    } catch (e) {
+      print('Error updating Firestore: $e');
+      throw Exception('Error updating user books: $e');
     }
   }
 }

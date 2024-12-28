@@ -13,6 +13,7 @@ class RentBookModal extends StatelessWidget {
     required this.book,
     required this.initialDays,
     required this.onRent,
+    required Book my_book,
   }) : super(key: key);
 
   @override
