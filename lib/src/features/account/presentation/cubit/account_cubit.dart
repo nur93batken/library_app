@@ -23,19 +23,14 @@ class UserCubit extends Cubit<UserState> {
   // Аренда книги
   Future<void> rentBook(Book book) async {
     if (state is! UserLoaded) {
-      print('Ошибка: пользователь не загружен');
       return;
     }
-
     final user = (state as UserLoaded).user;
-
     try {
       // Обновляем данные пользователя
       user.rentBook(book);
-
       // Обновляем данные в базе данных
       await _repository.updateUserBooks(user);
-
       // Обновляем состояние с новым пользователем
       emit(UserLoaded(user));
     } catch (e) {
@@ -50,12 +45,28 @@ class UserCubit extends Cubit<UserState> {
     try {
       user.returnBook(book);
       await _repository.updateUserBooks(user);
-      await loadUser(user.uid);
-      print('Firestore updated successfully.');
       emit(UserLoaded(user));
     } catch (e) {
-      print('Error updating Firestore: $e');
       emit(state.copyWith(errorMessage: e.toString()));
+    }
+  }
+
+  // Получение арендованных книг
+  Future<void> fetchUserRentedBooks() async {
+    if (state is! UserLoaded) {
+      return;
+    }
+
+    final user = (state as UserLoaded).user;
+
+    try {
+      // Получаем арендованные книги пользователя
+      final rentedBooks = await _repository.getUserRentedBooks(user);
+
+      // Обновляем состояние с новыми арендованными книгами
+      emit(UserLoaded(user.copyWith(rentedBooks: rentedBooks)));
+    } catch (e) {
+      emit(UserError('Ошибка получения арендованных книг: $e'));
     }
   }
 }

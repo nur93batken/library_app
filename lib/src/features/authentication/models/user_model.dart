@@ -17,6 +17,16 @@ class User {
   }) : rentedBooks = rentedBooks ??
             []; // Если rentedBooks == null, то присваиваем пустой список
 
+// Метод copyWith для обновления rentedBooks
+  User copyWith({List<Book>? rentedBooks}) {
+    return User(
+      uid: this.uid,
+      rentedBooks: rentedBooks ?? this.rentedBooks,
+      email: this.email,
+      password: this.password,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'email': email,
@@ -76,7 +86,7 @@ class User {
 
     // Удаляем книгу из списка и выполняем действия по возврату
     rentedBooks.remove(rentedBook);
-    rentedBook.returnBook(); // Вызываем метод возврата на найденной книге
+    book.returnBook();
     print("Book '${rentedBook.gettitle}' returned successfully.");
   }
 }

@@ -60,13 +60,26 @@ class BookCubit extends Cubit<List<Book>> {
 
   // Китепти кайтаруу
   Future<void> returnBook(Book book) async {
-    if (book.id == null) return; // ID текшерүү
+    if (book.id == null) return;
+
     try {
+      final doc = await _firestore.collection('books').doc(book.id).get();
+      if (!doc.exists) {
+        print('Книга не найдена');
+        return;
+      }
+
+      final data = doc.data();
+      final currentCopyCount = data?['copyCount'] ?? 0;
+
+      // Обновляем книгу
       await _firestore.collection('books').doc(book.id).update({
-        'copyCount': book.copyCount + 1,
+        'copyCount': currentCopyCount + 1,
         'isAvailable': true,
       });
-      loadBooks();
+
+      // Перезагружаем книги и фильтруем
+      await loadBooks();
       filterBooks('Все');
     } catch (e) {
       print('Ошибка при возврате книги: $e');

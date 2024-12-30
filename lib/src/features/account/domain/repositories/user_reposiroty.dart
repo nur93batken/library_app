@@ -114,4 +114,29 @@ class BookUserRepository {
       throw Exception('Error updating user books: $e');
     }
   }
+
+  Future<List<Book>> getUserRentedBooks(User user) async {
+    try {
+      // Получаем документ пользователя по его uid
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+
+      if (userDoc.exists) {
+        // Извлекаем поле 'rentedBooks' и преобразуем его в список объектов Book
+        final rentedBooksData =
+            userDoc.data()?['rentedBooks'] as List<dynamic>? ?? [];
+        List<Book> rentedBooks = rentedBooksData
+            .map((bookData) => Book.fromFirestore(bookData))
+            .toList();
+
+        print('Книги успешно получены.');
+        return rentedBooks;
+      } else {
+        print('Пользователь не найден.');
+        return [];
+      }
+    } catch (e) {
+      print('Ошибка при получении книг: $e');
+      throw Exception('Ошибка при получении книг пользователя: $e');
+    }
+  }
 }

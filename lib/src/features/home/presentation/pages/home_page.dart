@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_books/src/core/constants/colors.dart';
 import 'package:my_books/src/features/home/presentation/pages/add_book.dart';
+import 'package:my_books/src/features/home/presentation/pages/my_book.dart';
 
 import 'books.dart';
 
@@ -17,8 +18,8 @@ class _MyHomePageState extends State<MyHome> {
   // Список страниц
   static final List<Widget> _pages = <Widget>[
     BookScreen(),
-    const Center(child: Text('Избранное', style: TextStyle(fontSize: 24))),
     const Center(child: Text('Мои книги', style: TextStyle(fontSize: 24))),
+    RentedBooksScreen(),
   ];
 
   void _onItemTapped(int index) {
