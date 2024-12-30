@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../home/domain/entities/entities.dart';
+import '../../../home/home.dart';
 import '../../domain/repositories/repositories.dart';
 import 'account_state.dart';
 
