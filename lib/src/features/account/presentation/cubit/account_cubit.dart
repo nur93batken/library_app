@@ -40,13 +40,24 @@ class UserCubit extends Cubit<UserState> {
 
   // Возврат книги
   Future<void> returnBook(Book book) async {
-    if (state.user == null) return;
+    // Проверяем, что текущее состояние - UserLoaded
+    if (state is! UserLoaded) {
+      return;
+    }
+
     final user = (state as UserLoaded).user;
+
     try {
+      // Проверяем, что метод returnBook у пользователя существует и работает корректно
       user.returnBook(book);
+
+      // Обновляем информацию о пользователе в репозитории
       await _repository.updateUserBooks(user);
+
+      // Эмитируем новое состояние с обновлённым пользователем
       emit(UserLoaded(user));
     } catch (e) {
+      // В случае ошибки передаем сообщение об ошибке в состоянии
       emit(state.copyWith(errorMessage: e.toString()));
     }
   }

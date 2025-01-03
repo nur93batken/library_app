@@ -38,8 +38,9 @@ class _GenreFilterExampleState extends State<BookScreen> {
       providers: [
         BlocProvider<RentalCubit>(
           create: (context) => RentalCubit(
-            RentalRepository(FirebaseFirestore.instance),
-          )..fetchRentals(),
+              RentalRepository(FirebaseFirestore.instance),
+              FirebaseBookRepository(FirebaseFirestore.instance))
+            ..fetchRentals(),
         ),
         BlocProvider<BookCubit>(
           create: (context) => BookCubit(
@@ -96,6 +97,8 @@ class _GenreFilterExampleState extends State<BookScreen> {
                                   builder: (_) => BlocProvider(
                                     create: (context) => RentalCubit(
                                         RentalRepository(
+                                            FirebaseFirestore.instance),
+                                        FirebaseBookRepository(
                                             FirebaseFirestore.instance)),
                                     child: RentBookModal(
                                       book: book,
@@ -120,6 +123,8 @@ class _GenreFilterExampleState extends State<BookScreen> {
                                               .createRental(
                                                 bookId: book.id.toString(),
                                                 userId: userId,
+                                                bookTitle:
+                                                    '${book.gettitle}\nАвтор: ${book.author}',
                                                 userName: '',
                                                 rentalPeriodDays: days,
                                               );

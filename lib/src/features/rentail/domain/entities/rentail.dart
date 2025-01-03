@@ -9,7 +9,8 @@ class Rental {
   final String bookId; // Арендуемая книга
   final String userId; // ID пользователя
   final DateTime rentalDate; // Дата начала аренды
-  DateTime? dueDate; // Дата окончания аренды
+  final String bookTitle;
+  final DateTime dueDate; // Дата окончания аренды
   DateTime? returnDate; // Дата возврата книги
   final String userName;
 
@@ -20,14 +21,16 @@ class Rental {
     required this.userName,
     required this.userId,
     required this.rentalDate,
-    this.dueDate,
+    required this.dueDate,
     this.returnDate,
+    required this.bookTitle,
   });
 
   // Метод для создания аренды
   static Future<Rental?> createRental({
     required String bookId,
     required String userId,
+    required String bookTitle,
     required String userName,
     required int rentalPeriodDays,
   }) async {
@@ -36,6 +39,7 @@ class Rental {
       userName: userName,
       bookId: bookId,
       userId: userId,
+      bookTitle: bookTitle,
       rentalDate: DateTime.now(),
       dueDate: DateTime.now().add(Duration(days: rentalPeriodDays)),
     );
@@ -45,8 +49,10 @@ class Rental {
       final doc = await FirebaseFirestore.instance.collection('rentals').add({
         'bookId': bookId,
         'userId': userId,
+        'userName': userName,
+        'bookTitle': bookTitle,
         'rentalDate': rental.rentalDate.toIso8601String(),
-        'dueDate': rental.dueDate!.toIso8601String(),
+        'dueDate': rental.dueDate.toIso8601String(),
         'returnDate': null,
       });
 
@@ -58,20 +64,26 @@ class Rental {
   }
 
   factory Rental.fromMap(Map<String, dynamic> map) {
+    print("Парсинг Rental: $map"); // Лог данных
     try {
       return Rental(
-        id: map['id'] ?? '',
-        bookId: map['bookId'] ?? '',
-        userId: map['userId'] ?? '',
-        userName: map['userName'],
+        id: map['id'] as String? ?? '',
+        bookId: map['bookId'] as String? ?? '',
+        userId: map['userId'] as String? ?? '',
+        userName: map['userName'] as String? ?? '',
+        bookTitle: map['bookTitle'] as String? ?? '',
         rentalDate: map['rentalDate'] != null
             ? DateTime.tryParse(map['rentalDate']) ?? DateTime.now()
+            : DateTime.now(),
+        dueDate: map['dueDate'] != null
+            ? DateTime.tryParse(map['dueDate']) ?? DateTime.now()
             : DateTime.now(),
         returnDate: map['returnDate'] != null
             ? DateTime.tryParse(map['returnDate'])
             : null,
       );
     } catch (e) {
+      print('Ошибка: $e');
       throw Exception('Error parsing Rental from map: $e');
     }
   }
@@ -82,8 +94,10 @@ class Rental {
       'id': id,
       'bookId': bookId,
       'userId': userId,
-      'userNmae': userName,
+      'bookTitle': bookTitle,
+      'userName': userName, // Исправлено
       'rentalDate': rentalDate.toIso8601String(),
+      'dueDate': dueDate.toIso8601String(),
       'returnDate': returnDate?.toIso8601String(),
     };
   }
@@ -93,6 +107,7 @@ class Rental {
     String? id,
     Book? book,
     String? userId,
+    String? bookTitle,
     DateTime? rentalDate,
     DateTime? dueDate,
     DateTime? returnDate,
@@ -101,6 +116,7 @@ class Rental {
       id: id ?? this.id,
       bookId: this.bookId,
       userName: this.userName,
+      bookTitle: this.bookTitle,
       userId: userId ?? this.userId,
       rentalDate: rentalDate ?? this.rentalDate,
       dueDate: dueDate ?? this.dueDate,

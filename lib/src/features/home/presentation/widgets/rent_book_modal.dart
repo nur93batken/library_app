@@ -168,10 +168,12 @@ class RentBookModal extends StatelessWidget {
                                               title: Text(
                                                   'Пользователь: ${rental.userName}'), // Имя вместо userId
                                               subtitle: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    'Дата аренды: ${formatDate(rental.rentalDate)}',
-                                                    style: TextStyle(
+                                                    'Дата возврата аренды: ${formatDate(rental.dueDate)}',
+                                                    style: const TextStyle(
                                                         color: AppColors.red),
                                                   ),
                                                 ],
@@ -179,7 +181,7 @@ class RentBookModal extends StatelessWidget {
                                               trailing: rental.returnDate !=
                                                       null
                                                   ? Text(
-                                                      'Возврат: ${rental.dueDate?.toLocal()}'
+                                                      'Возврат: ${rental.dueDate.toLocal()}'
                                                           .split(' ')[0],
                                                       style: const TextStyle(
                                                           color:

@@ -51,4 +51,27 @@ class FirebaseBookRepository implements BookRepository {
       print("Error updating book: $e");
     }
   }
+
+  Future<String> getBookTitle(String bookId) async {
+    try {
+      final doc = await _firestore.collection('books').doc(bookId).get();
+      if (doc.exists) {
+        return doc.data()?['title'] ?? 'Без названия';
+      } else {
+        return 'Книга не найдена';
+      }
+    } catch (e) {
+      print("Ошибка при получении названия книги: $e");
+      return 'Ошибка загрузки названия';
+    }
+  }
+
+  Future<Book> getBookById(String bookId) async {
+    final doc = await _firestore.collection('books').doc(bookId).get();
+    if (doc.exists) {
+      return Book.fromDocument(doc);
+    } else {
+      throw Exception('Book not found');
+    }
+  }
 }

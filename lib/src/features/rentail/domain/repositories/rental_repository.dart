@@ -11,6 +11,7 @@ class RentalRepository {
     required String bookId,
     required String userId,
     required String userName,
+    required String bookTitle,
     required int rentalPeriodDays,
   }) async {
     try {
@@ -18,6 +19,7 @@ class RentalRepository {
 
       final rental = Rental(
         userName: userName,
+        bookTitle: bookTitle,
         bookId: bookId,
         userId: userId,
         rentalDate: DateTime.now(),
@@ -27,8 +29,9 @@ class RentalRepository {
       final doc = await firestore.collection('rentals').add({
         'bookId': bookId,
         'userId': userId,
+        'bookTitle': bookTitle,
         'rentalDate': rental.rentalDate.toIso8601String(),
-        'dueDate': rental.dueDate!.toIso8601String(),
+        'dueDate': rental.dueDate.toIso8601String(),
         'returnDate': null,
       });
 
@@ -83,6 +86,7 @@ class RentalRepository {
           bookId: data['bookId'], // Имплементация метода `fromFirestore`
           userId: data['userId'],
           userName: data['userName'],
+          bookTitle: data['bookTitle'],
           rentalDate: DateTime.parse(data['rentalDate']),
           dueDate: DateTime.parse(data['dueDate']),
           returnDate: data['returnDate'] != null
@@ -121,5 +125,30 @@ class RentalRepository {
     } catch (e) {
       throw Exception('Failed to get rentals by bookId: $e');
     }
+  }
+
+  Future<List<Rental>> getRentalsByUserId(String userId) async {
+    try {
+      final querySnapshot = await firestore
+          .collection('rentals') // Коллекция аренды
+          .where('userId', isEqualTo: userId) // Фильтрация по userId
+          .get();
+
+      List<Rental> rentals = [];
+      for (var doc in querySnapshot.docs) {
+        final rentalData = doc.data();
+
+        // Создаём объект Rental
+        rentals.add(Rental.fromMap({...rentalData, 'id': doc.id}));
+      }
+
+      return rentals;
+    } catch (e) {
+      throw Exception('Failed to get rentals by userId: $e');
+    }
+  }
+
+  Future<void> deleteRentalById(String rentalId) async {
+    await firestore.collection('rentals').doc(rentalId).delete();
   }
 }

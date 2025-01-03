@@ -136,6 +136,18 @@ class Book {
     };
   }
 
+  factory Book.fromDocument(DocumentSnapshot doc) {
+    return Book(
+      id: doc.id,
+      title: doc['title'],
+      author: doc['author'],
+      date: doc['date'],
+      genres: '',
+      copyCount: doc['copyCount'],
+      isAvailable: true,
+    );
+  }
+
   // Метод для преобразования данных из карты
   factory Book.fromJson(Map<String, dynamic> data) {
     return Book(
