@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_books/src/features/rentail/presentation/cubit/rentail_cubit.dart';
+import 'package:my_books/src/features/rentail/presentation/cubit/rentail_state.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/constants/constants.dart';
 import '../../domain/entities/entities.dart';
 
@@ -7,6 +10,7 @@ class RentBookModal extends StatelessWidget {
   final Book book;
   final double initialDays;
   final ValueChanged<int> onRent;
+  final String bookId;
 
   const RentBookModal({
     Key? key,
@@ -14,12 +18,19 @@ class RentBookModal extends StatelessWidget {
     required this.initialDays,
     required this.onRent,
     required Book my_book,
+    required this.bookId,
   }) : super(key: key);
+
+  // Форматирование даты
+  String formatDate(DateTime date) {
+    return DateFormat('dd.MM.yyyy').format(date);
+  }
 
   @override
   Widget build(BuildContext context) {
     double localDay = initialDays;
     double localPrice = initialDays * 30;
+    context.read<RentalCubit>().fetchRentalsByBookId(book.id.toString());
 
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter setState) {
@@ -107,26 +118,93 @@ class RentBookModal extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: book.copyCount > 0
-                                  ? () {
-                                      onRent(localDay.toInt());
-                                      Navigator.pop(context);
-                                    }
-                                  : null, // Кнопка будет неактивной, если copyCount <= 0
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: book.copyCount > 0
-                                    ? AppColors.blue
-                                    : AppColors
-                                        .greyText, // Цвет для неактивного состояния
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16.0),
+                          Column(
+                            children: [
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: book.copyCount > 0
+                                      ? () {
+                                          onRent(localDay.toInt());
+                                          Navigator.pop(context);
+                                        }
+                                      : null, // Кнопка будет неактивной, если copyCount <= 0
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: book.copyCount > 0
+                                        ? AppColors.blue
+                                        : AppColors
+                                            .greyText, // Цвет для неактивного состояния
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16.0),
+                                  ),
+                                  child: const Text('Арендовать'),
+                                ),
                               ),
-                              child: const Text('Арендовать'),
-                            ),
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: BlocBuilder<RentalCubit, RentalState>(
+                                  builder: (context, state) {
+                                    if (state is RentalLoading) {
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    } else if (state is RentalListLoaded) {
+                                      final rentals = state.rentals;
+
+                                      if (rentals.isEmpty) {
+                                        return const Center(
+                                          child: Text(
+                                              'Нет активных аренд для этой книги.'),
+                                        );
+                                      }
+
+                                      return SizedBox(
+                                        height: 600,
+                                        child: ListView.builder(
+                                          itemCount: rentals.length,
+                                          itemBuilder: (context, index) {
+                                            final rental = rentals[index];
+                                            return ListTile(
+                                              title: Text(
+                                                  'Пользователь: ${rental.userName}'), // Имя вместо userId
+                                              subtitle: Column(
+                                                children: [
+                                                  Text(
+                                                    'Дата аренды: ${formatDate(rental.rentalDate)}',
+                                                    style: TextStyle(
+                                                        color: AppColors.red),
+                                                  ),
+                                                ],
+                                              ),
+                                              trailing: rental.returnDate !=
+                                                      null
+                                                  ? Text(
+                                                      'Возврат: ${rental.dueDate?.toLocal()}'
+                                                          .split(' ')[0],
+                                                      style: const TextStyle(
+                                                          color:
+                                                              AppColors.blue),
+                                                    )
+                                                  : const Text('Аренда активна',
+                                                      style: TextStyle(
+                                                          color:
+                                                              AppColors.red)),
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    } else if (state is RentalError) {
+                                      return Center(
+                                          child:
+                                              Text('Ошибка: ${state.message}'));
+                                    }
+
+                                    return const Center(
+                                        child: Text('Неизвестное состояние.'));
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

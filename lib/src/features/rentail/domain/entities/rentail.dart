@@ -6,44 +6,35 @@ import '../../../home/domain/entities/book_entiti.dart';
 // Класс Rental (Аренда)
 class Rental {
   final String? id; // ID аренды
-  final Book book; // Арендуемая книга
+  final String bookId; // Арендуемая книга
   final String userId; // ID пользователя
   final DateTime rentalDate; // Дата начала аренды
-  final DateTime dueDate; // Дата окончания аренды
+  DateTime? dueDate; // Дата окончания аренды
   DateTime? returnDate; // Дата возврата книги
+  final String userName;
 
   // Конструктор
   Rental({
     this.id,
-    required this.book,
+    required this.bookId,
+    required this.userName,
     required this.userId,
     required this.rentalDate,
-    required this.dueDate,
+    this.dueDate,
     this.returnDate,
   });
 
-  // Метод для проверки доступности книги
-  bool isBookAvailable() {
-    return book.isAvailable && book.copyCount > 0;
-  }
-
   // Метод для создания аренды
   static Future<Rental?> createRental({
-    required Book book,
+    required String bookId,
     required String userId,
+    required String userName,
     required int rentalPeriodDays,
   }) async {
-    if (!book.isAvailable) {
-      print("Book '${book.gettitle}' is not available for rental.");
-      return null;
-    }
-
-    // Уменьшаем количество доступных копий книги
-    book.rentBook();
-
     // Создаем объект Rental
     final rental = Rental(
-      book: book,
+      userName: userName,
+      bookId: bookId,
       userId: userId,
       rentalDate: DateTime.now(),
       dueDate: DateTime.now().add(Duration(days: rentalPeriodDays)),
@@ -52,10 +43,10 @@ class Rental {
     // Сохраняем аренду в Firestore
     try {
       final doc = await FirebaseFirestore.instance.collection('rentals').add({
-        'bookId': book.id,
+        'bookId': bookId,
         'userId': userId,
         'rentalDate': rental.rentalDate.toIso8601String(),
-        'dueDate': rental.dueDate.toIso8601String(),
+        'dueDate': rental.dueDate!.toIso8601String(),
         'returnDate': null,
       });
 
@@ -66,28 +57,35 @@ class Rental {
     }
   }
 
-  // Метод для возврата книги
-  Future<void> returnBook() async {
-    if (returnDate != null) {
-      print("The book '${book.gettitle}' has already been returned.");
-      return;
-    }
-
-    // Обновляем дату возврата
-    returnDate = DateTime.now();
-
-    // Увеличиваем количество копий книги
-    book.returnBook();
-
-    // Обновляем аренду в Firestore
+  factory Rental.fromMap(Map<String, dynamic> map) {
     try {
-      await FirebaseFirestore.instance
-          .collection('rentals')
-          .doc(id)
-          .update({'returnDate': returnDate!.toIso8601String()});
+      return Rental(
+        id: map['id'] ?? '',
+        bookId: map['bookId'] ?? '',
+        userId: map['userId'] ?? '',
+        userName: map['userName'],
+        rentalDate: map['rentalDate'] != null
+            ? DateTime.tryParse(map['rentalDate']) ?? DateTime.now()
+            : DateTime.now(),
+        returnDate: map['returnDate'] != null
+            ? DateTime.tryParse(map['returnDate'])
+            : null,
+      );
     } catch (e) {
-      print("Ошибка при обновлении аренды: $e");
+      throw Exception('Error parsing Rental from map: $e');
     }
+  }
+
+  // Преобразование объекта Rental в Map для сохранения в Firebase
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'bookId': bookId,
+      'userId': userId,
+      'userNmae': userName,
+      'rentalDate': rentalDate.toIso8601String(),
+      'returnDate': returnDate?.toIso8601String(),
+    };
   }
 
   // Метод для копирования Rental с изменением параметров
@@ -101,7 +99,8 @@ class Rental {
   }) {
     return Rental(
       id: id ?? this.id,
-      book: book ?? this.book,
+      bookId: this.bookId,
+      userName: this.userName,
       userId: userId ?? this.userId,
       rentalDate: rentalDate ?? this.rentalDate,
       dueDate: dueDate ?? this.dueDate,
