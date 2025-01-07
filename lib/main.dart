@@ -10,5 +10,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   final storage = await SharedPreferences.getInstance();
-  runApp(MyApp(storage: storage));
+  runApp(MyApp(
+    storage: storage,
+  ));
 }

@@ -1,4 +1,4 @@
-import '../../../home/data/models/models.dart';
+import '../../../home/domain/entities/entities.dart';
 
 class User {
   String name;

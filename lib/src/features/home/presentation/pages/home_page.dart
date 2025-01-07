@@ -5,8 +5,10 @@ import 'package:my_books/src/core/constants/colors.dart';
 import 'package:my_books/src/features/app/bloc/auth_bloc.dart';
 
 import 'package:my_books/src/features/home/presentation/pages/add_book.dart';
-import 'package:my_books/src/features/home/presentation/pages/books.dart';
+
 import 'package:my_books/src/features/utils/app_show.dart';
+
+import 'package:my_books/src/features/home/presentation/pages/my_book.dart';
 
 class MyHome extends StatefulWidget {
   const MyHome({super.key});
@@ -21,8 +23,8 @@ class _MyHomePageState extends State<MyHome> {
   // Список страниц
   static final List<Widget> _pages = <Widget>[
     BookScreen(),
-    const Center(child: Text('Избранное', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('Настройки', style: TextStyle(fontSize: 24))),
+    const Center(child: Text('Мои книги', style: TextStyle(fontSize: 24))),
+    RentedBooksScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -114,8 +116,8 @@ class _MyHomePageState extends State<MyHome> {
             label: 'Избранное',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Настройки',
+            icon: Icon(Icons.bookmark),
+            label: 'Мои книги',
           ),
         ],
         currentIndex: _selectedIndex, // Указываем текущий индекс
